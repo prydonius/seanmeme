@@ -12,8 +12,8 @@ pipeline {
       steps {
         checkout scm
         sh '''
-          make docker-image
-          docker tag $IMAGE_NAME:latest $IMAGE_NAME:$BUILD_ID
+          docker run --rm -v "${PWD}":/go/src/seanmeme -w /go/src/seanmeme -e CGO_ENABLED=0 golang:1.8 go build
+          docker build -t $IMAGE_NAME:$BUILD_ID .
         '''
       }
     }
