@@ -9,7 +9,7 @@
   <style>
     #images > img {
       padding: 20px;
-      width: 400px;
+      width: 250px;
     }
   </style>
 </head>
@@ -46,8 +46,7 @@
     var database = firebase.database();
     var ref = database.ref('memes');
     ref.on('child_added', function(data) {
-      console.log(data.val());
-      $('#images').prepend('<img src="memes/'+data.val()+'" />');
+      $('#images').prepend('<img src="data:image/jpg;base64,'+data.val()+'" />');
     });
 
     $("#memeForm").submit(function(e) {
