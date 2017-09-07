@@ -1,4 +1,6 @@
-FROM busybox
+FROM alpine
+
+RUN apk add -U ca-certificates
 
 COPY static/ /static/
 COPY seanmeme /
