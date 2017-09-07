@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sean Meme</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+  <style>
+    #images > img {
+      padding: 20px;
+      width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sean Meme's photos</h1>
+    <form class="form-inline" id="memeForm">
+      <select class="custom-select" id="memeType">
+        <option value="winter" selected>Brace yourselves...</option>
+        <!-- <option value="mordor">One does not simply...</option> -->
+      </select>
+      <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="memeText" placeholder="write a meme" required>
+
+      <button id="submit" type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <div id="images">
+    </div>
+  </div>
+</body>
+<script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyA2lWauFzyF4va5c1sVIJgkJfhlLbZIKnQ",
+    authDomain: "seanmeme-fdcf7.firebaseapp.com",
+    databaseURL: "https://seanmeme-fdcf7.firebaseio.com",
+    projectId: "seanmeme-fdcf7",
+    storageBucket: "seanmeme-fdcf7.appspot.com",
+    messagingSenderId: "495376677428"
+  };
+  firebase.initializeApp(config);
+  $(document).ready(function() {
+    var database = firebase.database();
+    var ref = database.ref('memes');
+    ref.on('child_added', function(data) {
+      console.log(data.val());
+      $('#images').prepend('<img src="memes/'+data.val()+'" />');
+    });
+
+    $("#memeForm").submit(function(e) {
+      $('#submit').prop('disabled', true);
+      e.preventDefault();
+      var memeType = $('#memeType').val();
+      var text = $('#memeText').val().replace(/\s/g, '_');
+      $.post('/gen/'+memeType+'/'+text.replace(/\s/g, '_')).always(function() {
+        $('#submit').prop('disabled', false);
+      });
+
+      $('#memeText').val('');
+    });
+  });
+</script>
+</html>
