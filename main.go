@@ -1,13 +1,12 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
@@ -15,7 +14,6 @@ import (
 )
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	f := firego.New("https://seanmeme-fdcf7.firebaseio.com/memes", nil)
 	r := mux.NewRouter()
 
@@ -36,27 +34,24 @@ func main() {
 			return
 		}
 
-		response, err := http.Get(url + "?width=400")
+		response, err := http.Get(url + "?width=250")
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
+			return
 		}
-
 		defer response.Body.Close()
 
-		//open a file for writing
-		filename := randStringRunes(5) + ".jpg"
-		file, err := os.Create("./static/memes/" + filename)
+		data, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
+			return
 		}
-		_, err = io.Copy(file, response.Body)
+
+		img := base64.StdEncoding.EncodeToString(data)
+		_, err = f.Push(img)
 		if err != nil {
-			log.Fatal(err)
-		}
-		file.Close()
-		_, err = f.Push(filename)
-		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
+			return
 		}
 	})
 
@@ -68,14 +63,4 @@ func main() {
 	port := os.Getenv("PORT")
 	addr := ":" + port
 	http.ListenAndServe(addr, n)
-}
-
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randStringRunes(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
 }
