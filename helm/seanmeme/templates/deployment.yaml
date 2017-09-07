@@ -1,26 +1,37 @@
 apiVersion: extensions/v1beta1
-kind: Ingress
+kind: Deployment
 metadata:
   name: {{ template "fullname" . }}
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    {{- if .Values.ingress.tls }}
-    kubernetes.io/tls-acme: 'true'
-    {{- end }}
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    app: {{ template "name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: {{ template "fullname" . }}
-          servicePort: {{ .Values.service.externalPort }}
-        path: /
-    host: {{ .Values.ingress.host | quote }}
-{{- if .Values.ingress.tls }}
-  tls:
-  - secretName: {{ .Values.ingress.host }}-tls
-    hosts:
-    - {{ .Values.ingress.host | quote }}
-{{- end -}}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
