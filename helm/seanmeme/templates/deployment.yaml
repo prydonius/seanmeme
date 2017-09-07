@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "fullname" . }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    {{- if .Values.ingress.tls }}
+    kubernetes.io/tls-acme: 'true'
+    {{- end }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.service.externalPort }}
+        path: /
+    host: {{ .Values.ingress.host | quote }}
+{{- if .Values.ingress.tls }}
+  tls:
+  - secretName: {{ .Values.ingress.host }}-tls
+    hosts:
+    - {{ .Values.ingress.host | quote }}
+{{- end -}}
