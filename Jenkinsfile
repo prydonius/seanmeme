@@ -1,14 +1,12 @@
 pipeline {
-  agent none
-
   environment {
     IMAGE_NAME = 'prydonius/seanmeme'
   }
 
+  agent any
+
   stages {
     stage('Build') {
-      agent any
-
       steps {
         checkout scm
         sh '''
@@ -18,15 +16,11 @@ pipeline {
       }
     }
     stage('Test') {
-      agent any
-
       steps {
         echo 'TODO: add tests'
       }
     }
     stage('Image Release') {
-      agent any
-
       when {
         expression { env.BRANCH_NAME == 'master' }
       }
@@ -42,8 +36,6 @@ pipeline {
       }
     }
     stage('Staging Deployment') {
-      agent any
-
       when {
         expression { env.BRANCH_NAME == 'master' }
       }
@@ -73,8 +65,6 @@ pipeline {
       }
     }
     stage('Production Deployment') {
-      agent any
-
       when {
         expression { env.BRANCH_NAME == 'master' }
       }
